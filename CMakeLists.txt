@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(Project_NeuroNet)
-
+project(Project_SAT_Solver)
 
 find_program(CLANG_FORMAT "clang-format")
 
@@ -18,7 +17,7 @@ endif()
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/sources/*.cpp)
 
-set (EXEC_FILE "net")
+set (EXEC_FILE "solver")
 
 add_executable (${EXEC_FILE} ${SOURCES})
 

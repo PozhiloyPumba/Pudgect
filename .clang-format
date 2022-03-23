@@ -9,7 +9,6 @@ AllowShortCaseLabelsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
-AllowShortCaseLabelsOnASingleLine: true
 BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializers: BeforeColon
