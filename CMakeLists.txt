@@ -56,17 +56,6 @@ target_include_directories(${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/sources/lex
 
 set (COMPILER_SETTINGS
     -std=c++2a
-    # -Wall
-    # -Wextra
-
-    # -Wsign-promo
-    # -Wdouble-promotion
-
-    # -Wfloat-equal
-    # -Wbool-compare
-
-    # -Wdiv-by-zero
-
     -O2
 )
 

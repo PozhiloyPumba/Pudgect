@@ -54,55 +54,39 @@ namespace yy {
 /* TREE */
 %type <SAT::Node*> expr
 
-%start expr
+%start start
 
 %%
+start       :   expr                {
+                                        driver->setRoot ($1);
+                                    }
+
 expr        :   expr IMPL expr      {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::IMPL);
                                         node->left_ = $1;
                                         node->right_ = $3;
 
-                                        if (!driver->getRoot ()) {
-                                            driver->setRoot (node);
-                                        }
-                                        else {
-                                            $$ = node;
-                                        }
+                                        $$ = node;
                                     }
             |   expr OR expr        {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::OR);
                                         node->left_ = $1;
                                         node->right_ = $3;
 
-                                        if (!driver->getRoot ()) {
-                                            driver->setRoot (node);
-                                        }
-                                        else {
-                                            $$ = node;
-                                        }
+                                        $$ = node;
                                     }
             |   expr AND expr       {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::AND);
                                         node->left_ = $1;
                                         node->right_ = $3;
 
-                                        if (!driver->getRoot ()) {
-                                            driver->setRoot (node);
-                                        }
-                                        else {
-                                            $$ = node;
-                                        }
+                                        $$ = node;
                                     }
             |   NOT expr            {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::NOT);
                                         node->left_ = $2;
 
-                                        if (!driver->getRoot ()) {
-                                            driver->setRoot (node);
-                                        }
-                                        else {
-                                            $$ = node;
-                                        }
+                                        $$ = node;
                                     }
             |   ID                  {
                                         $$ = new SAT::VarNode ($1);
