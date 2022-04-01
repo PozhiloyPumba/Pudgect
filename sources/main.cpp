@@ -1,13 +1,14 @@
 #include <iostream>
-#include "driver.hpp"
 
-int yyFlexLexer::yywrap () { return 1; }
+#include "driver.hpp"
 
 int main ()
 {
-    yy::Driver driver;
+    yy::Form driver;
     driver.parse ();
-    
-    driver.callDump (std::cout);
+
+    // driver.callDump (std::cout);
+    std::cout << driver.toString () << std::endl;
+
     return 0;
 }

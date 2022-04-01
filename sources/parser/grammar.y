@@ -6,7 +6,7 @@
 %define lr.type ielr
 %define api.value.type variant
 
-%param {yy::Driver* driver}
+%param {yy::Form* driver}
 
 %code requires
 {
@@ -14,18 +14,18 @@
 #include <string>
 #include "include/tree.hpp"
 #include "include/node.hpp"
-namespace yy {class Driver;};
+namespace yy {class Form;};
 
 }
 
 %code
 {
-#include "sources/driver.hpp"
+#include "include/driver.hpp"
 #include <string>
 
 namespace yy {
 
-    parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* location, Driver *driver);
+    parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* location, Form *driver);
 
 }
 }
@@ -99,12 +99,15 @@ expr        :   expr IMPL expr      {
                                     }
             |   LBRAC expr RBRAC    {
                                         $$ = $2;
+                                    }
+            |   error               {   /*TODO error handling*/
+                                        $$ = nullptr;
                                     };
 %%
 
 namespace yy {
 
-parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* location, Driver* driver) {
+parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* location, Form* driver) {
     
     try {
 

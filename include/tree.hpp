@@ -21,7 +21,6 @@ namespace Tree {
                 PrintNodeIntoGraphviz (curNode->left_, out);
             if (curNode->right_)
                 PrintNodeIntoGraphviz (curNode->right_, out);
-            
         }
 
         void BuildConnectionsInGraphviz (T curNode, std::ostream &out) const
@@ -31,7 +30,7 @@ namespace Tree {
 
             if (curNode->right_)
                 out << "\"" << curNode << "\" -> \"" << curNode->right_ << "\"\n";
-            
+
             if (curNode->left_)
                 BuildConnectionsInGraphviz (curNode->left_, out);
             if (curNode->right_)
@@ -54,7 +53,7 @@ namespace Tree {
             while (stack.size ()) {
                 curNode = stack.top ();
                 stack.pop ();
-                if (curNode){
+                if (curNode) {
                     queueOnDelete.push_back (curNode);
 
                     auto childrenSt = curNode->left_;

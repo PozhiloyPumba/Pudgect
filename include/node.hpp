@@ -6,14 +6,15 @@
 
 namespace SAT {
 
-    enum class NodeT {
-
-        VARIABLE,
-        OPERATOR,
-        CONST
-    };
 
     class Node {
+    public:
+        enum class NodeT {
+            VARIABLE,
+            OPERATOR,
+            CONST
+        };
+    private:
         Node *parent_;
 
         const NodeT type_;
@@ -35,6 +36,7 @@ namespace SAT {
 
         Node *getParent () const { return parent_; }
         virtual void nodeDump (std::ostream &out) const = 0;
+        virtual std::string getNodeForDump () const = 0;
     };
 
     class VarNode final : public Node {
@@ -49,23 +51,23 @@ namespace SAT {
         void nodeDump (std::ostream &out) const override { out << name_; }
 
         std::string getName () const { return name_; }
+        std::string getNodeForDump () const override { return name_; }
     };
 
     class OperNode final : public Node {
     public:
-        enum class OperType;
+        // the members of this enumerate are arranged in order of precedence
+        enum class OperType {
+            IMPL,  // a -> b
+            OR,    // a | b
+            AND,   // a & b
+            NOT    // ~a
+        };
 
     private:
         OperType opType_;
 
     public:
-        enum class OperType {
-            AND,  // a & b
-            OR,   // a | b
-            IMPL, // a -> b 
-            NOT   // ~a
-        };
-
         OperNode (const OperType opType, Node *parent = nullptr)
             : Node (NodeT::OPERATOR, parent), opType_ (opType)
         {
@@ -83,6 +85,16 @@ namespace SAT {
                 default: out << "Unexpected operator type!";
             }
         }
+        std::string getNodeForDump () const override
+        {
+            switch (opType_) {
+                case OperType::IMPL: return "->";
+                case OperType::OR: return "|";
+                case OperType::AND: return "&";
+                case OperType::NOT: return "~";
+                default: return "Unexpected operator type!";
+            }
+        }
     };
 
     class ConstNode final : public Node {
@@ -97,7 +109,8 @@ namespace SAT {
         void nodeDump (std::ostream &out) const override { out << value_; }
 
         bool getVal () const { return value_; }
+        std::string getNodeForDump () const override { return std::to_string (value_); }
     };
-}
+}  // namespace SAT
 
 #endif

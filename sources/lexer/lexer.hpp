@@ -42,6 +42,7 @@ public:
     yy::location getLocation () const { return location_; }
 
     int yylex () override;
+
 };
 
 #endif

@@ -9,6 +9,7 @@
     #include "../sources/lexer/lexer.hpp"
     #define YY_USER_ACTION setLocation ();
     #define yyterminate() return yy::parser::token_type::END
+    int yyFlexLexer::yywrap () { return 1; }
 
 %}
 
