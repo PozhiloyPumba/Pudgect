@@ -15,8 +15,8 @@ namespace SAT {
             CONST
         };
     private:
-        Node *parent_;
 
+        Node *parent_;
         const NodeT type_;
 
     public:

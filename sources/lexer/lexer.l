@@ -13,7 +13,7 @@
 
 %}
 
-TRASH_SYMBS             [ \t\r\n\v]+
+TRASH_SYMBS             [ \t\n\r\v]+
 DIGIT                   [0-9]
 
 ALPHA                   [a-zA-Z]
@@ -33,6 +33,8 @@ WORD                    ({ALPHA}|"_")({ALPHA}|{DIGIT}|"_")*
 "1"                     {   return yy::parser::token_type::TAUT;        }
 "0"                     {   return yy::parser::token_type::FALSE;       }
 {WORD}                  {   return yy::parser::token_type::ID;          }
+";"                     {   return yy::parser::token_type::SEMICOLON;   }
+"="                     {   return yy::parser::token_type::EQUAL;       }
 
 .                       {   return yy::parser::token_type::LEXERR;      }
 

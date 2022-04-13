@@ -51,8 +51,8 @@ add_executable (${EXEC_FILE} ${SOURCES} ${BISON_parser_OUTPUTS} ${FLEX_scanner_O
 
 target_include_directories (${EXEC_FILE} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories (${EXEC_FILE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/include")
-target_include_directories(${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/sources/lexer")
+target_include_directories (${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/include")
+target_include_directories (${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/sources/lexer")
 
 set (COMPILER_SETTINGS
     -std=c++2a

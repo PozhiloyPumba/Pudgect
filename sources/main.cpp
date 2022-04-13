@@ -7,8 +7,10 @@ int main ()
     yy::Form driver;
     driver.parse ();
 
-    // driver.callDump (std::cout);
-    std::cout << driver.toString () << std::endl;
+    // std::cout << driver.toString () << std::endl;
 
+    driver.toCNF ();
+    driver.callDump (std::cout);
+    std::cout << std::endl;
     return 0;
 }

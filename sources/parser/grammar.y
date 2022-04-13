@@ -12,6 +12,7 @@
 {
 #include <iostream>
 #include <string>
+#include <utility>
 #include "include/tree.hpp"
 #include "include/node.hpp"
 namespace yy {class Form;};
@@ -34,14 +35,16 @@ namespace yy {
 
 %token <std::string>        ID
 
-%token                      AND      "&"
-%token                      OR       "|"
-%token                      IMPL     "->"
-%token                      LBRAC    "("
-%token                      RBRAC    ")"
-%token                      NOT      "~"
-%token                      TAUT     "1"
-%token                      FALSE    "0"
+%token                      AND         "&"
+%token                      OR          "|"
+%token                      IMPL        "->"
+%token                      LBRAC       "("
+%token                      RBRAC       ")"
+%token                      NOT         "~"
+%token                      TAUT        "1"
+%token                      FALSE       "0"
+%token                      SEMICOLON   ";"
+%token                      EQUAL       "="
 %token                      LEXERR
 %token                      END         0   "end of file"
 
@@ -53,18 +56,24 @@ namespace yy {
 
 /* TREE */
 %type <SAT::Node*> expr
+%type <void *> eval
 
 %start start
 
 %%
-start       :   expr                {
-                                        driver->setRoot ($1);
+start       :   expr SEMICOLON eval {
+                                            driver->setRoot ($1);
                                     }
+            |   expr                {
+                                            driver->setRoot ($1);
+                                    };
 
 expr        :   expr IMPL expr      {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::IMPL);
                                         node->left_ = $1;
                                         node->right_ = $3;
+                                        $1->setParent (node);
+                                        $3->setParent (node);
 
                                         $$ = node;
                                     }
@@ -72,6 +81,8 @@ expr        :   expr IMPL expr      {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::OR);
                                         node->left_ = $1;
                                         node->right_ = $3;
+                                        $1->setParent (node);
+                                        $3->setParent (node);
 
                                         $$ = node;
                                     }
@@ -79,12 +90,15 @@ expr        :   expr IMPL expr      {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::AND);
                                         node->left_ = $1;
                                         node->right_ = $3;
+                                        $1->setParent (node);
+                                        $3->setParent (node);
 
                                         $$ = node;
                                     }
             |   NOT expr            {
                                         auto node = new SAT::OperNode (SAT::OperNode::OperType::NOT);
                                         node->left_ = $2;
+                                        $2->setParent (node);
 
                                         $$ = node;
                                     }
@@ -103,6 +117,12 @@ expr        :   expr IMPL expr      {
             |   error               {   /*TODO error handling*/
                                         $$ = nullptr;
                                     };
+
+eval        :   ID EQUAL TAUT    SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, true));  }
+            |   ID EQUAL FALSE   SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, false)); }
+            |   error   {   /*TODO error handling*/
+                            $$ = nullptr;
+                        };
 %%
 
 namespace yy {

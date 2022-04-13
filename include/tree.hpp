@@ -31,6 +31,9 @@ namespace Tree {
             if (curNode->right_)
                 out << "\"" << curNode << "\" -> \"" << curNode->right_ << "\"\n";
 
+            if (curNode->getParent ())
+                out << "\"" << curNode << "\" -> \"" << curNode->getParent () << "\"\n";
+
             if (curNode->left_)
                 BuildConnectionsInGraphviz (curNode->left_, out);
             if (curNode->right_)
@@ -80,8 +83,8 @@ namespace Tree {
                 return;
             }
 
-            out << "digraph tree {\n"
-                   "rankdir = \"LR\"\n"
+            out << "digraph {\n"
+                   "rankdir = \"TB\"\n"
                    "node [fontsize=10, shape=box, height=0.5]\n"
                    "edge [fontsize=10]\n";
 
