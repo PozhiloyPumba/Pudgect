@@ -54,10 +54,14 @@ target_include_directories (${EXEC_FILE} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories (${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/include")
 target_include_directories (${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/sources/lexer")
 
+target_compile_options(${EXEC_FILE} PRIVATE -fsanitize=address)
+target_link_options(${EXEC_FILE} PRIVATE -fsanitize=address)
+
 set (COMPILER_SETTINGS
     -std=c++2a
     -Wall
     -O2
+    -g
 )
 
 target_compile_options(${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS})
