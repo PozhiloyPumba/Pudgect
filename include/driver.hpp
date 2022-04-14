@@ -24,6 +24,8 @@ namespace yy {
         void recToString (SAT::Node *curRoot, std::string &str) const;
 
         void deleteImplication ();
+        bool recDeMorgan (SAT::Node *curNode);
+        void lambDeMorgan (SAT::Node *curNode, SAT::Node *newOp);
         void deMorgan ();
         void deleteDoubleNeg ();
         void lawOfDistr ();

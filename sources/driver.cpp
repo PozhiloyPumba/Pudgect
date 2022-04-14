@@ -78,7 +78,7 @@ namespace yy {
     }
 
 
-    void Form::deleteImplication () //FIXME:
+    void Form::deleteImplication ()
     {
         std::stack<SAT::Node *> inorder;
 
@@ -114,25 +114,117 @@ namespace yy {
                 node->right_ = rightNode;
                 node->right_->setParent (node);
                 delete curNode;
-                inorder.push (node->left_);
-                inorder.push (node->right_);
+                curNode = node;
             }
-            else {
-                inorder.push (curNode->left_);
-                // std::cout << curNode->getNodeForDump () << " parent " << curNode->getParent ()->getNodeForDump () << std::endl;
-                inorder.push (curNode->right_);
-            }
+
+            inorder.push (curNode->left_);
+            inorder.push (curNode->right_);
         }
     }
 
-    void Form::deMorgan ()
+    void Form::lambDeMorgan (SAT::Node *curNode, SAT::Node *newOp)
     {
+        auto *curOp = curNode->left_;
+        auto *curRoot = newOp->getParent (); //root
 
+        if (curRoot != nullptr) {
+            if (curRoot->left_ == curNode) curRoot->left_ = newOp;
+            else curRoot->right_ = newOp;
+        }
+        else tree_.setRoot (newOp);
+
+        auto *notNodeLeft = new SAT::OperNode (SAT::OperNode::OperType::NOT, newOp);
+        newOp->left_ = notNodeLeft;
+        curOp->left_->setParent (notNodeLeft);
+        notNodeLeft->left_ = curOp->left_;
+
+        auto *notNodeRight = new SAT::OperNode (SAT::OperNode::OperType::NOT, newOp);
+        newOp->right_ = notNodeRight;
+        curOp->right_->setParent (notNodeRight);
+        notNodeRight->left_ = curOp->right_;
+
+        delete curNode->left_;
+        delete curNode;
+    }
+
+    bool Form::recDeMorgan (SAT::Node *curNode)
+    {
+        if (!curNode) return false;
+
+        bool wasChL = recDeMorgan (curNode->left_);
+        bool wasChR = recDeMorgan (curNode->right_);
+
+        bool wasCh = wasChL || wasChR;
+
+        if (curNode->getType () == SAT::Node::NodeT::OPERATOR &&
+            static_cast<SAT::OperNode *>(curNode)->getOpType () == SAT::OperNode::OperType::NOT && curNode->left_ &&
+            curNode->left_->getType () == SAT::Node::NodeT::OPERATOR) {
+
+            auto *curOp = static_cast<SAT::OperNode *>(curNode->left_);
+            switch (curOp->getOpType ()) {
+                case SAT::OperNode::OperType::OR: {
+                    auto *newOp = new SAT::OperNode (SAT::OperNode::OperType::AND, curNode->getParent ());
+                    lambDeMorgan (curNode, newOp);
+                    wasCh = true;
+                    break;
+                }
+                case SAT::OperNode::OperType::AND: {
+                    auto *newOp = new SAT::OperNode (SAT::OperNode::OperType::OR, curNode->getParent ());
+                    lambDeMorgan (curNode, newOp);
+                    wasCh = true;
+                    break;
+                }
+                default:;
+            }
+        }
+
+        return wasCh;
+    }
+
+    void Form::deMorgan ()  //TODO: add it in readme
+    {
+        while (recDeMorgan (tree_.getRoot ()))
+            ;
     }
 
     void Form::deleteDoubleNeg ()
     {
+        std::stack<SAT::Node *> inorder;
 
+        inorder.push (tree_.getRoot ());
+
+        while (!inorder.empty ()) {
+            auto curNode = inorder.top ();
+            inorder.pop ();
+            
+            if (!curNode)
+                continue;
+
+            if (curNode->getType () == SAT::Node::NodeT::OPERATOR &&
+                static_cast<SAT::OperNode *>(curNode)->getOpType () == SAT::OperNode::OperType::NOT &&
+                curNode->left_->getType () == SAT::Node::NodeT::OPERATOR &&
+                static_cast<SAT::OperNode *>(curNode->left_)->getOpType () == SAT::OperNode::OperType::NOT) {
+
+                auto *parent = curNode->getParent ();
+                auto *newCHildNode = curNode->left_->left_;
+
+                newCHildNode->setParent (parent);
+
+                if (parent != nullptr) {
+                    if (parent->left_ == curNode) parent->left_ = newCHildNode;
+                    else parent->right_ = newCHildNode;
+                }
+                else tree_.setRoot (parent);
+
+                delete curNode->left_;
+                delete curNode;
+                curNode = newCHildNode;
+                inorder.push (newCHildNode);
+            }
+
+            inorder.push (curNode->left_);
+            inorder.push (curNode->right_);
+        }
     }
 
     void Form::lawOfDistr ()
