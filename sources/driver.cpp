@@ -80,13 +80,13 @@ namespace yy {
 
     void Form::deleteImplication ()
     {
-        std::stack<SAT::Node *> inorder;
+        std::stack<SAT::Node *> preorder;
 
-        inorder.push (tree_.getRoot ());
+        preorder.push (tree_.getRoot ());
 
-        while (!inorder.empty ()) {
-            auto curNode = inorder.top ();
-            inorder.pop ();
+        while (!preorder.empty ()) {
+            auto curNode = preorder.top ();
+            preorder.pop ();
             
             if (!curNode)
                 continue;
@@ -117,8 +117,8 @@ namespace yy {
                 curNode = node;
             }
 
-            inorder.push (curNode->left_);
-            inorder.push (curNode->right_);
+            preorder.push (curNode->left_);
+            preorder.push (curNode->right_);
         }
     }
 
@@ -189,13 +189,13 @@ namespace yy {
 
     void Form::deleteDoubleNeg ()
     {
-        std::stack<SAT::Node *> inorder;
+        std::stack<SAT::Node *> preorder;
 
-        inorder.push (tree_.getRoot ());
+        preorder.push (tree_.getRoot ());
 
-        while (!inorder.empty ()) {
-            auto curNode = inorder.top ();
-            inorder.pop ();
+        while (!preorder.empty ()) {
+            auto curNode = preorder.top ();
+            preorder.pop ();
             
             if (!curNode)
                 continue;
@@ -219,17 +219,42 @@ namespace yy {
                 delete curNode->left_;
                 delete curNode;
                 curNode = newCHildNode;
-                inorder.push (newCHildNode);
+                preorder.push (newCHildNode);
             }
 
-            inorder.push (curNode->left_);
-            inorder.push (curNode->right_);
+            preorder.push (curNode->left_);
+            preorder.push (curNode->right_);
         }
     }
 
     void Form::lawOfDistr ()
     {
+        std::stack<SAT::Node *> preorder;
 
+        preorder.push (tree_.getRoot ());
+
+        while (!preorder.empty ()) {
+            auto curNode = preorder.top ();
+            preorder.pop ();
+            
+            if (!curNode)
+                continue;
+
+            if (curNode->getType () == SAT::Node::NodeT::OPERATOR &&
+                static_cast<SAT::OperNode *>(curNode)->getOpType () == SAT::OperNode::OperType::OR) {
+
+                if (curNode->left_->getType () == SAT::Node::NodeT::OPERATOR &&
+                    static_cast<SAT::OperNode *>(curNode->left_)->getOpType () == SAT::OperNode::OperType::AND) { //TODO
+                    
+                }
+                if (curNode->right_->getType () == SAT::Node::NodeT::OPERATOR &&
+                    static_cast<SAT::OperNode *>(curNode->right_)->getOpType () == SAT::OperNode::OperType::AND) { //TODO
+                
+                }
+            }
+            preorder.push (curNode->left_);
+            preorder.push (curNode->right_);
+        }
     }
 
 }

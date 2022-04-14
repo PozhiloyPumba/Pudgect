@@ -6,7 +6,6 @@
 
 namespace SAT {
 
-
     class Node {
     public:
         enum class NodeT {
@@ -37,6 +36,7 @@ namespace SAT {
         Node *getParent () const { return parent_; }
         virtual void nodeDump (std::ostream &out) const = 0;
         virtual std::string getNodeForDump () const = 0;
+        virtual Node *deepCopySubTree () const = 0;
     };
 
     class VarNode final : public Node {
@@ -52,6 +52,10 @@ namespace SAT {
 
         std::string getName () const { return name_; }
         std::string getNodeForDump () const override { return name_; }
+        Node *deepCopySubTree () const override //TODO
+        {
+
+        }
     };
 
     class OperNode final : public Node {
@@ -95,6 +99,11 @@ namespace SAT {
                 default: return "Unexpected operator type!";
             }
         }
+
+        Node *deepCopySubTree () const override //TODO
+        {
+
+        }
     };
 
     class ConstNode final : public Node {
@@ -110,6 +119,10 @@ namespace SAT {
 
         bool getVal () const { return value_; }
         std::string getNodeForDump () const override { return std::to_string (value_); }
+        Node *deepCopySubTree () const override //TODO
+        {
+
+        }
     };
 }  // namespace SAT
 
