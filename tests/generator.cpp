@@ -10,9 +10,6 @@
     third argument  = count of operation
 */
 
-void itoa (int res, char *buf, int strl);
-int sizeofnum (int res);
-
 int main (int argc, char **argv)
 {
     srand (time (nullptr));
@@ -39,10 +36,17 @@ int main (int argc, char **argv)
         if (!(rand () % 3)) // 33%
             result += "~";
 
+        result += "v" + std::to_string (rand () % atoi (argv[2]));
+
+        if (!(rand () % 3) && br > 0) { // 33%
+            result += ")";
+            --br;
+        }
+
         switch (rand () % 3) {
-            case 0: result += ("v" + std::to_string (rand () % atoi (argv[2])) + "|"); break;
-            case 1: result += ("v" + std::to_string (rand () % atoi (argv[2])) + "&"); break;
-            case 2: result += ("v" + std::to_string (rand () % atoi (argv[2])) + "->"); break;
+            case 0: result += "|"; break;
+            case 1: result += "&"; break;
+            case 2: result += "->"; break;
         }
     }
 

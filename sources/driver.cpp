@@ -229,31 +229,86 @@ namespace yy {
 
     void Form::lawOfDistr ()
     {
-        std::stack<SAT::Node *> preorder;
+        std::stack<SAT::Node *> postorder;
+        std::stack<SAT::Node *> queue;
 
-        preorder.push (tree_.getRoot ());
+        postorder.push (tree_.getRoot ());
 
-        while (!preorder.empty ()) {
-            auto curNode = preorder.top ();
-            preorder.pop ();
+        while (!postorder.empty ()) {
+            auto curNode = postorder.top ();
+            postorder.pop ();
+
+            if (curNode) {
+                queue.push (curNode);
+                postorder.push (curNode->left_);
+                postorder.push (curNode->right_);
+            }
+        }
+        // std::cout << queue.size() << std::endl;
+
+        while (!queue.empty ()) {
             
-            if (!curNode)
-                continue;
-
+            auto *curNode = queue.top ();
+            queue.pop ();
+            
             if (curNode->getType () == SAT::Node::NodeT::OPERATOR &&
                 static_cast<SAT::OperNode *>(curNode)->getOpType () == SAT::OperNode::OperType::OR) {
 
                 if (curNode->left_->getType () == SAT::Node::NodeT::OPERATOR &&
-                    static_cast<SAT::OperNode *>(curNode->left_)->getOpType () == SAT::OperNode::OperType::AND) { //TODO
+                    static_cast<SAT::OperNode *>(curNode->left_)->getOpType () == SAT::OperNode::OperType::AND) {
                     
+                    auto *parent = curNode->getParent ();
+                    auto *leftOp = curNode->left_;
+
+                    curNode->left_ = leftOp->right_;
+                    curNode->setParent (leftOp);
+                    leftOp->setParent (parent);
+                    
+                    if (parent){
+                        if (parent->left_ == curNode) parent->left_ = leftOp;
+                        else parent->right_ = leftOp;
+                    }
+                    else tree_.setRoot (leftOp);
+
+                    auto *newOr = new SAT::OperNode (SAT::OperNode::OperType::OR, leftOp);
+
+                    newOr->left_ = leftOp->left_;
+                    newOr->left_->setParent (newOr);
+                    newOr->right_ = curNode->right_->copySubTree (newOr);
+                    leftOp->left_ = newOr;
+                    leftOp->right_ = curNode;
+                    curNode->left_->setParent (curNode);
+                    queue.push (newOr);
+                    queue.push (curNode);
                 }
-                if (curNode->right_->getType () == SAT::Node::NodeT::OPERATOR &&
-                    static_cast<SAT::OperNode *>(curNode->right_)->getOpType () == SAT::OperNode::OperType::AND) { //TODO
-                
+                else if (curNode->right_->getType () == SAT::Node::NodeT::OPERATOR &&
+                    static_cast<SAT::OperNode *>(curNode->right_)->getOpType () == SAT::OperNode::OperType::AND) {
+                        
+                    auto *parent = curNode->getParent ();
+                    auto *rightOp = curNode->right_;
+
+                    curNode->right_ = rightOp->left_;
+                    curNode->setParent (rightOp);
+                    rightOp->setParent (parent);
+                    
+                    if (parent){
+                        if (parent->left_ == curNode) parent->left_ = rightOp;
+                        else parent->right_ = rightOp;
+                    }
+                    else tree_.setRoot (rightOp);
+                    
+                    auto *newOr = new SAT::OperNode (SAT::OperNode::OperType::OR, rightOp);
+
+                    newOr->right_ = rightOp->right_;
+                    newOr->right_->setParent (newOr);
+                    newOr->left_ = curNode->left_->copySubTree (newOr);
+                    rightOp->right_ = newOr;
+                    rightOp->left_ = curNode;
+                    curNode->right_->setParent (curNode);
+                    queue.push (newOr);
+                    queue.push (curNode);
                 }
             }
-            preorder.push (curNode->left_);
-            preorder.push (curNode->right_);
         }
     }
 

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <stack>
 
 namespace SAT {
 
@@ -13,11 +14,10 @@ namespace SAT {
             OPERATOR,
             CONST
         };
-    private:
+    protected:
 
         Node *parent_;
         const NodeT type_;
-
     public:
         Node *left_ = nullptr;
         Node *right_ = nullptr;
@@ -29,6 +29,8 @@ namespace SAT {
         Node &operator= (Node &&other) = delete;
         virtual ~Node () = default;
 
+        virtual Node *clone (Node *parent = nullptr) const = 0;
+
         NodeT getType () const { return type_; }
 
         void setParent (Node *parent) { parent_ = parent; }
@@ -36,7 +38,18 @@ namespace SAT {
         Node *getParent () const { return parent_; }
         virtual void nodeDump (std::ostream &out) const = 0;
         virtual std::string getNodeForDump () const = 0;
-        virtual Node *deepCopySubTree () const = 0;
+
+        Node *copySubTree (Node *parent = nullptr)
+        {
+            
+            Node *curCopy = clone (parent);
+
+            if (left_)
+                curCopy->left_ = left_->copySubTree (curCopy);
+            if (right_)
+                curCopy->right_ = right_->copySubTree (curCopy);
+            return curCopy;
+        }
     };
 
     class VarNode final : public Node {
@@ -52,9 +65,10 @@ namespace SAT {
 
         std::string getName () const { return name_; }
         std::string getNodeForDump () const override { return name_; }
-        Node *deepCopySubTree () const override //TODO
-        {
 
+        Node *clone (Node *parent = nullptr) const override
+        {
+            return new VarNode (name_, parent);
         }
     };
 
@@ -99,10 +113,10 @@ namespace SAT {
                 default: return "Unexpected operator type!";
             }
         }
-
-        Node *deepCopySubTree () const override //TODO
+        
+        Node *clone (Node *parent = nullptr) const override
         {
-
+            return new OperNode (opType_, parent);
         }
     };
 
@@ -119,9 +133,10 @@ namespace SAT {
 
         bool getVal () const { return value_; }
         std::string getNodeForDump () const override { return std::to_string (value_); }
-        Node *deepCopySubTree () const override //TODO
+        
+        Node *clone (Node *parent = nullptr) const override
         {
-
+            return new ConstNode (value_, parent);
         }
     };
 }  // namespace SAT

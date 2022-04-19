@@ -26,13 +26,13 @@ namespace Tree {
         void BuildConnectionsInGraphviz (T curNode, std::ostream &out) const
         {
             if (curNode->left_)
-                out << "\"" << curNode << "\" -> \"" << curNode->left_ << "\"\n";
+                out << "\"" << curNode << "\" -> \"" << curNode->left_ << "\" [color=\"black\"]\n";
 
             if (curNode->right_)
-                out << "\"" << curNode << "\" -> \"" << curNode->right_ << "\"\n";
+                out << "\"" << curNode << "\" -> \"" << curNode->right_ << "\" [color=\"black\"]\n";
 
             if (curNode->getParent ())
-                out << "\"" << curNode << "\" -> \"" << curNode->getParent () << "\"\n";
+                out << "\"" << curNode << "\" -> \"" << curNode->getParent () << "\" [color=\"red\"]\n";
 
             if (curNode->left_)
                 BuildConnectionsInGraphviz (curNode->left_, out);
