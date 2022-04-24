@@ -45,6 +45,7 @@ namespace yy {
 %token                      FALSE       "0"
 %token                      SEMICOLON   ";"
 %token                      COLON       ":"
+%token                      COMMA       ","
 %token                      EQUAL       "="
 %token                      LEXERR
 %token                      END         0   "end of file"
@@ -143,9 +144,10 @@ expr        :   expr IMPL expr      {
                                         driver->pushError (@1, "Undefined syntax in form");    $$ = nullptr;
                                     };
 
-eval        :   %empty                                { $$ = nullptr;}
-            |   ID EQUAL TAUT    SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, true));  }
-            |   ID EQUAL FALSE   SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, false)); }
+eval        :   ID EQUAL TAUT    COMMA eval           {   driver->addEvalInfo (std::make_pair ($1, true));  }
+            |   ID EQUAL FALSE   COMMA eval           {   driver->addEvalInfo (std::make_pair ($1, false)); }
+            |   ID EQUAL FALSE                        {   driver->addEvalInfo (std::make_pair ($1, false)); }
+            |   ID EQUAL TAUT                         {   driver->addEvalInfo (std::make_pair ($1, true)); }
             |   error SEMICOLON                       {   driver->pushError (@1, "Undefined syntax in eval");    $$ = nullptr;    };
 %%
 

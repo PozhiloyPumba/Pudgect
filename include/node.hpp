@@ -2,26 +2,26 @@
 #define NODE_HPP__
 
 #include <iostream>
-#include <string>
 #include <stack>
+#include <string>
 
 namespace SAT {
 
     class Node {
     public:
-        enum class NodeT {
-            VARIABLE,
-            OPERATOR,
-            CONST
-        };
-    protected:
+        enum class NodeT { VARIABLE,
+                           OPERATOR,
+                           CONST };
 
+    protected:
         Node *parent_;
         const NodeT type_;
+
     public:
         Node *left_ = nullptr;
         Node *right_ = nullptr;
-        Node (const NodeT type, Node *parent = nullptr) : parent_ (parent), type_ (type) {}
+        Node (const NodeT type, Node *parent = nullptr)
+            : parent_ (parent), type_ (type) {}
 
         Node (const Node &other) = delete;
         Node (Node &&other) = delete;
@@ -56,9 +56,7 @@ namespace SAT {
 
     public:
         VarNode (const std::string &name, Node *parent = nullptr)
-            : Node (NodeT::VARIABLE, parent), name_ (name)
-        {
-        }
+            : Node (NodeT::VARIABLE, parent), name_ (name) {}
 
         void nodeDump (std::ostream &out) const override { out << name_; }
 
@@ -86,33 +84,45 @@ namespace SAT {
 
     public:
         OperNode (const OperType opType, Node *parent = nullptr)
-            : Node (NodeT::OPERATOR, parent), opType_ (opType)
-        {
-        }
+            : Node (NodeT::OPERATOR, parent), opType_ (opType) {}
 
         OperType getOpType () const { return opType_; }
 
         void nodeDump (std::ostream &out) const override
         {
             switch (opType_) {
-                case OperType::IMPL: out << "IMPL (->)"; break;
-                case OperType::OR: out << "OR (|)"; break;
-                case OperType::AND: out << "AND (&)"; break;
-                case OperType::NOT: out << "NOT (~)"; break;
-                default: out << "Unexpected operator type!";
+                case OperType::IMPL:
+                    out << "IMPL (->)";
+                    break;
+                case OperType::OR:
+                    out << "OR (|)";
+                    break;
+                case OperType::AND:
+                    out << "AND (&)";
+                    break;
+                case OperType::NOT:
+                    out << "NOT (~)";
+                    break;
+                default:
+                    out << "Unexpected operator type!";
             }
         }
         std::string getNodeForDump () const override
         {
             switch (opType_) {
-                case OperType::IMPL: return "->";
-                case OperType::OR: return "|";
-                case OperType::AND: return "&";
-                case OperType::NOT: return "~";
-                default: return "Unexpected operator type!";
+                case OperType::IMPL:
+                    return "->";
+                case OperType::OR:
+                    return "|";
+                case OperType::AND:
+                    return "&";
+                case OperType::NOT:
+                    return "~";
+                default:
+                    return "Unexpected operator type!";
             }
         }
-        
+
         Node *clone (Node *parent = nullptr) const override
         {
             return new OperNode (opType_, parent);
@@ -124,15 +134,13 @@ namespace SAT {
 
     public:
         ConstNode (bool value, Node *parent = nullptr)
-            : Node (NodeT::CONST, parent), value_ (value)
-        {
-        }
+            : Node (NodeT::CONST, parent), value_ (value) {}
 
         void nodeDump (std::ostream &out) const override { out << value_; }
 
         bool getVal () const { return value_; }
         std::string getNodeForDump () const override { return std::to_string (value_); }
-        
+
         Node *clone (Node *parent = nullptr) const override
         {
             return new ConstNode (value_, parent);

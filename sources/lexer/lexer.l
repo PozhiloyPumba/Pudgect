@@ -36,6 +36,7 @@ WORD                    ({ALPHA}|"_")({ALPHA}|{DIGIT}|"_")*
 ";"                     {   return yy::parser::token_type::SEMICOLON;   }
 ":"                     {   return yy::parser::token_type::COLON;       }
 "="                     {   return yy::parser::token_type::EQUAL;       }
+","                     {   return yy::parser::token_type::COMMA;       }
 
 .                       {   return yy::parser::token_type::LEXERR;      }
 

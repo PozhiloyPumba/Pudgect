@@ -25,28 +25,34 @@ int main (int argc, char **argv)
     std::string result = "";
 
     for (int i = 0, sz = atoi (argv[3]); i < sz; ++i) {
-        if (!(rand () % 3)) // 33%
+        if (!(rand () % 3))  // 33%
             result += "~";
 
-        if (!(rand () % 3)) { // 33%
+        if (!(rand () % 3)) {  // 33%
             result += "(";
             ++br;
         }
 
-        if (!(rand () % 3)) // 33%
+        if (!(rand () % 3))  // 33%
             result += "~";
 
         result += "v" + std::to_string (rand () % atoi (argv[2]));
 
-        if (!(rand () % 3) && br > 0) { // 33%
+        if (!(rand () % 3) && br > 0) {  // 33%
             result += ")";
             --br;
         }
 
         switch (rand () % 3) {
-            case 0: result += "|"; break;
-            case 1: result += "&"; break;
-            case 2: result += "->"; break;
+            case 0:
+                result += "|";
+                break;
+            case 1:
+                result += "&";
+                break;
+            case 2:
+                result += "->";
+                break;
         }
     }
 
@@ -59,7 +65,7 @@ int main (int argc, char **argv)
         result += ")";
 
     result += ";";
-    
+
     fprintf (wrt, "%s", result.data ());
     fclose (wrt);
 

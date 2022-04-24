@@ -1,4 +1,5 @@
 #include "driver.hpp"
+
 #include <stack>
 
 namespace yy {
@@ -21,4 +22,4 @@ namespace yy {
         return tokenT;
     }
 
-}
+}  // namespace yy

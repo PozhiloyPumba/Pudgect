@@ -8,10 +8,11 @@ int main ()
     if (form.input ())
         return 0;
 
-    form.toCNF ();
-    form.simplify ();
-    // std::cout << form.toString () << std::endl;
-    form.callDump (std::cout);
-    std::cout << std::endl;
+    // form.toCNF ();
+    // form.simplify ();
+    SAT::Form eval = form.evaluate ();
+    std::cout << eval.toString () << std::endl;
+    // eval.callDump (std::cout);
+    // std::cout << std::endl;
     return 0;
 }

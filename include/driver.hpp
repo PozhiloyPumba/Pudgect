@@ -3,19 +3,19 @@
 
 #include <FlexLexer.h>
 
+#include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <list>
 #include <memory>
 #include <stack>
-#include <utility>
-#include <algorithm>
-#include <iostream>
 #include <unordered_map>
-#include <fstream>
+#include <utility>
 
 #include "grammar.tab.hh"
 #include "lexer.hpp"
 #include "node.hpp"
 #include "tree.hpp"
-#include <list>
 
 namespace yy {
 
@@ -25,16 +25,16 @@ namespace yy {
         std::unordered_map<std::string, bool> evalInfo_;
         std::vector<std::string> error_;
 
-        public:
+    public:
         Driver () : lexer_ (std::unique_ptr<SATLexer>{new SATLexer})
-        {}
+        {
+        }
 
         inline bool parse ()
         {
             parser parser (this);
             bool res = parser.parse ();
-            std::for_each ( error_.begin (), error_.end (), 
-                            [] (const std::string &forDump) {std::cout << forDump << std::endl;});
+            std::for_each (error_.begin (), error_.end (), [] (const std::string &forDump) { std::cout << forDump << std::endl; });
 
             return !res;
         }
@@ -42,11 +42,11 @@ namespace yy {
         parser::token_type yylex (parser::semantic_type *yylval, parser::location_type *location);
 
         void setRoot (SAT::Node *node) { tree_.setRoot (node); }
-        
+
         SAT::Node *getRoot () const { return tree_.getRoot (); }
-        
-        void addEvalInfo (const std::pair<std::string, bool> &var) {  evalInfo_.insert (var);  }
-        
+
+        void addEvalInfo (const std::pair<std::string, bool> &var) { evalInfo_.insert (var); }
+
         inline void pushError (yy::location curLocation, const std::string &err)
         {
             std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) + std::string (": ");
@@ -54,9 +54,9 @@ namespace yy {
             error_.push_back (errPos + err);
         }
 
-        inline void printEvalInfo () const {
-            std::for_each ( evalInfo_.begin (), evalInfo_.end (), 
-                            [] (const std::pair<std::string, bool> &forDump) {std::cout << forDump.first << "=" << forDump.second;});
+        inline void printEvalInfo () const
+        {
+            std::for_each (evalInfo_.begin (), evalInfo_.end (), [] (const std::pair<std::string, bool> &forDump) { std::cout << forDump.first << "=" << forDump.second; });
         }
 
         inline void callDump (std::ostream &out) const { tree_.dump (out); }
