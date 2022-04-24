@@ -8,63 +8,62 @@
 #include <utility>
 #include <algorithm>
 #include <iostream>
+#include <unordered_map>
+#include <fstream>
 
 #include "grammar.tab.hh"
 #include "lexer.hpp"
 #include "node.hpp"
 #include "tree.hpp"
+#include <list>
 
 namespace yy {
 
-    class Form final {
+    class Driver {
         std::unique_ptr<SATLexer> lexer_;
         Tree::BinaryTree<SAT::Node *> tree_;
-        std::vector<std::pair<std::string, bool>> evalInfo_;
-        
-        void recToString (SAT::Node *curRoot, std::string &str) const;
+        std::unordered_map<std::string, bool> evalInfo_;
+        std::vector<std::string> error_;
 
-        void deleteImplication ();
-        bool recDeMorgan (SAT::Node *curNode);
-        void lambDeMorgan (SAT::Node *curNode, SAT::Node *newOp);
-        void deMorgan ();
-        void deleteDoubleNeg ();
-        void lawOfDistr ();
-        
-    public:
-        Form () : lexer_ (std::unique_ptr<SATLexer>{new SATLexer}) {}
+        public:
+        Driver () : lexer_ (std::unique_ptr<SATLexer>{new SATLexer})
+        {}
 
-        bool parse ()
+        inline bool parse ()
         {
             parser parser (this);
             bool res = parser.parse ();
+            std::for_each ( error_.begin (), error_.end (), 
+                            [] (const std::string &forDump) {std::cout << forDump << std::endl;});
+
             return !res;
         }
-
-        void toCNF ()
-        {
-            deleteImplication ();
-            deMorgan ();
-            deleteDoubleNeg ();
-            lawOfDistr ();
-        }
-
-        std::string toString () const; // func which cast form to string
 
         parser::token_type yylex (parser::semantic_type *yylval, parser::location_type *location);
 
         void setRoot (SAT::Node *node) { tree_.setRoot (node); }
         
-        SAT::Node *getRoot () { return tree_.getRoot (); }
+        SAT::Node *getRoot () const { return tree_.getRoot (); }
         
-        void addEvalInfo (const std::pair<std::string, bool> &var) {  evalInfo_.push_back (var);  }
+        void addEvalInfo (const std::pair<std::string, bool> &var) {  evalInfo_.insert (var);  }
         
-        void printEvalInfo () const {
-            std::for_each (evalInfo_.begin (), evalInfo_.end (), 
-            [] (const std::pair<std::string, bool> &forDump) {std::cout << forDump.first << "=" << forDump.second;});
+        inline void pushError (yy::location curLocation, const std::string &err)
+        {
+            std::string errPos = std::string ("ERROR::#") + std::to_string (curLocation.begin.line) + std::string (": ");
+
+            error_.push_back (errPos + err);
         }
 
-        void callDump (std::ostream &out) { tree_.dump (out); }
+        inline void printEvalInfo () const {
+            std::for_each ( evalInfo_.begin (), evalInfo_.end (), 
+                            [] (const std::pair<std::string, bool> &forDump) {std::cout << forDump.first << "=" << forDump.second;});
+        }
+
+        inline void callDump (std::ostream &out) const { tree_.dump (out); }
+
+        inline void swapEvalInfo (std::unordered_map<std::string, bool> &forSwap) { evalInfo_.swap (forSwap); }
     };
+
 }  // namespace yy
 
 #endif

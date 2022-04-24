@@ -1,16 +1,17 @@
 #include <iostream>
 
-#include "driver.hpp"
+#include "form.hpp"
 
 int main ()
 {
-    yy::Form driver;
-    driver.parse ();
+    SAT::Form form;
+    if (form.input ())
+        return 0;
 
-
-    driver.toCNF ();
-    std::cout << driver.toString () << std::endl;
-    // driver.callDump (std::cout);
+    form.toCNF ();
+    form.simplify ();
+    // std::cout << form.toString () << std::endl;
+    form.callDump (std::cout);
     std::cout << std::endl;
     return 0;
 }

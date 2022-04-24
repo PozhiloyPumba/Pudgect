@@ -6,7 +6,7 @@
 %define lr.type ielr
 %define api.value.type variant
 
-%param {yy::Form* driver}
+%param {yy::Driver* driver}
 
 %code requires
 {
@@ -15,7 +15,7 @@
 #include <utility>
 #include "include/tree.hpp"
 #include "include/node.hpp"
-namespace yy {class Form;};
+namespace yy {class Driver;};
 
 }
 
@@ -26,7 +26,7 @@ namespace yy {class Form;};
 
 namespace yy {
 
-    parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* location, Form *driver);
+    parser::token_type yylex(parser::semantic_type* yylval, parser::location_type* location, Driver *driver);
 
 }
 }
@@ -44,6 +44,7 @@ namespace yy {
 %token                      TAUT        "1"
 %token                      FALSE       "0"
 %token                      SEMICOLON   ";"
+%token                      COLON       ":"
 %token                      EQUAL       "="
 %token                      LEXERR
 %token                      END         0   "end of file"
@@ -61,46 +62,70 @@ namespace yy {
 %start start
 
 %%
-start       :   expr SEMICOLON eval {
-                                            driver->setRoot ($1);
-                                    }
-            |   expr                {
-                                            driver->setRoot ($1);
-                                    };
+start       :   expr COLON eval SEMICOLON       {
+                                                    driver->setRoot ($1);
+                                                }
+            |   expr SEMICOLON                  {
+                                                    driver->setRoot ($1);
+                                                };
 
 expr        :   expr IMPL expr      {
-                                        auto node = new SAT::OperNode (SAT::OperNode::OperType::IMPL);
-                                        node->left_ = $1;
-                                        node->right_ = $3;
-                                        $1->setParent (node);
-                                        $3->setParent (node);
-
-                                        $$ = node;
+                                        if ($1 && $3) {
+                                            auto node = new SAT::OperNode (SAT::OperNode::OperType::IMPL);
+                                            node->left_ = $1;
+                                            node->right_ = $3;
+                                            $1->setParent (node);
+                                            $3->setParent (node);
+                                            $$ = node;
+                                        }
+                                        else {
+                                            delete $1;
+                                            delete $3;
+                                            $$ = nullptr;
+                                        }
                                     }
             |   expr OR expr        {
-                                        auto node = new SAT::OperNode (SAT::OperNode::OperType::OR);
-                                        node->left_ = $1;
-                                        node->right_ = $3;
-                                        $1->setParent (node);
-                                        $3->setParent (node);
-
-                                        $$ = node;
+                                        if ($1 && $3) {
+                                            auto node = new SAT::OperNode (SAT::OperNode::OperType::OR);
+                                            node->left_ = $1;
+                                            node->right_ = $3;
+                                            $1->setParent (node);
+                                            $3->setParent (node);
+                                            $$ = node;
+                                        }
+                                        else {
+                                            delete $1;
+                                            delete $3;
+                                            $$ = nullptr;
+                                        }
                                     }
             |   expr AND expr       {
-                                        auto node = new SAT::OperNode (SAT::OperNode::OperType::AND);
-                                        node->left_ = $1;
-                                        node->right_ = $3;
-                                        $1->setParent (node);
-                                        $3->setParent (node);
-
-                                        $$ = node;
+                                        if ($1 && $3) {
+                                            auto node = new SAT::OperNode (SAT::OperNode::OperType::AND);
+                                            node->left_ = $1;
+                                            node->right_ = $3;
+                                            $1->setParent (node);
+                                            $3->setParent (node);
+                                            $$ = node;
+                                        }
+                                        else {
+                                            delete $1;
+                                            delete $3;
+                                            $$ = nullptr;
+                                        }
                                     }
             |   NOT expr            {
-                                        auto node = new SAT::OperNode (SAT::OperNode::OperType::NOT);
-                                        node->left_ = $2;
-                                        $2->setParent (node);
+                                        if ($2) {
+                                            auto node = new SAT::OperNode (SAT::OperNode::OperType::NOT);
+                                            node->left_ = $2;
+                                            $2->setParent (node);
 
-                                        $$ = node;
+                                            $$ = node;
+                                        }
+                                        else {
+                                            delete $2;
+                                            $$ = nullptr;
+                                        }
                                     }
             |   ID                  {
                                         $$ = new SAT::VarNode ($1);
@@ -114,20 +139,19 @@ expr        :   expr IMPL expr      {
             |   LBRAC expr RBRAC    {
                                         $$ = $2;
                                     }
-            |   error               {   /*TODO error handling*/
-                                        $$ = nullptr;
+            |   error SEMICOLON     {
+                                        driver->pushError (@1, "Undefined syntax in form");    $$ = nullptr;
                                     };
 
-eval        :   ID EQUAL TAUT    SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, true));  }
+eval        :   %empty                                { $$ = nullptr;}
+            |   ID EQUAL TAUT    SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, true));  }
             |   ID EQUAL FALSE   SEMICOLON eval       {   driver->addEvalInfo (std::make_pair ($1, false)); }
-            |   error   {   /*TODO error handling*/
-                            $$ = nullptr;
-                        };
+            |   error SEMICOLON                       {   driver->pushError (@1, "Undefined syntax in eval");    $$ = nullptr;    };
 %%
 
 namespace yy {
 
-parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* location, Form* driver) {
+parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* location, Driver* driver) {
     
     try {
 

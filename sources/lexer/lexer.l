@@ -34,6 +34,7 @@ WORD                    ({ALPHA}|"_")({ALPHA}|{DIGIT}|"_")*
 "0"                     {   return yy::parser::token_type::FALSE;       }
 {WORD}                  {   return yy::parser::token_type::ID;          }
 ";"                     {   return yy::parser::token_type::SEMICOLON;   }
+":"                     {   return yy::parser::token_type::COLON;       }
 "="                     {   return yy::parser::token_type::EQUAL;       }
 
 .                       {   return yy::parser::token_type::LEXERR;      }

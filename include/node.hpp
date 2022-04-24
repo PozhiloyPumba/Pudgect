@@ -41,7 +41,6 @@ namespace SAT {
 
         Node *copySubTree (Node *parent = nullptr)
         {
-            
             Node *curCopy = clone (parent);
 
             if (left_)
