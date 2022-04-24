@@ -58,6 +58,8 @@ int main (int argc, char **argv)
     for (int i = 0; i < br; ++i)
         result += ")";
 
+    result += ";";
+    
     fprintf (wrt, "%s", result.data ());
     fclose (wrt);
 
