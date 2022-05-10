@@ -1,10 +1,8 @@
 #include "driver.hpp"
 
-#include <stack>
-
 namespace yy {
 
-    parser::token_type Driver::yylex (parser::semantic_type *yylval, parser::location_type *location)
+    parser::token_type Driver::yylex (parser::semantic_type *yylval, [[maybe_unused]] parser::location_type *location)
     {
         parser::token_type tokenT = static_cast<parser::token_type> (lexer_->yylex ());
 

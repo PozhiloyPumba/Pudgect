@@ -49,7 +49,7 @@ namespace SAT {
             else {
                 auto curPriority = static_cast<std::underlying_type_t<SAT::OperNode::OperType>> (curOp->getOpType ());
 
-                auto printChild = [this, curPriority, curOp, &str] (auto &child) {
+                auto printChild = [this, curPriority, &str] (auto &child) {
                     bool wasBr = false;
                     if (child->getType () == SAT::Node::NodeT::OPERATOR) {
                         auto childOp = static_cast<SAT::OperNode *> (child);
@@ -331,7 +331,7 @@ namespace SAT {
         deMorgan ();
         deleteDoubleNeg ();
         lawOfDistr ();
-        isCNF = true;
+        isCNF_ = true;
     }
 
     void Form::destructSubNode (std::list<SAT::Node *> &preorder, SAT::Node *curRoot)
@@ -567,10 +567,13 @@ namespace SAT {
 
     void Form::simplify ()
     {
-        if (!isCNF)
-            toCNF ();
-
-        simplifyAllConjuncts ();
+        if (!isSimple_) {
+            if (!isCNF_)
+                toCNF ();
+            
+            simplifyAllConjuncts ();
+            isSimple_ = true;
+        }
     }
 
     void Form::changingEvaluate ()
@@ -629,4 +632,131 @@ namespace SAT {
     {
         std::for_each (evalInfo_.begin (), evalInfo_.end (), [] (const std::pair<std::string, bool> &forDump) { std::cout << forDump.first << "=" << forDump.second; });
     }
+
+    CNF_3::CNF_3 (const Form &form)
+    {
+        if (!form.isSimple ()) {
+            Form newForm = form;
+            newForm.simplify ();
+            init (newForm);
+        }
+        else init (form);
+    }
+
+    void CNF_3::conjunctCast (SAT::Node *curNode)
+    {
+        std::vector<SAT::Node *> preorder;
+        std::vector<std::pair <std::string, bool>> vars;
+
+        preorder.push_back (curNode);
+
+        while (!preorder.empty ()) {
+            auto *curNode = preorder.back ();
+            preorder.pop_back ();
+
+            if (!curNode)
+                continue;
+
+            if (curNode->getType () == SAT::Node::NodeT::VARIABLE) {
+                auto *var = static_cast<SAT::VarNode *> (curNode);
+                vars.push_back ({var->getName (), false});
+                continue;
+            }
+
+            auto *op = static_cast<SAT::OperNode *> (curNode);
+            if (op->getOpType () == SAT::OperNode::OperType::NOT) {
+                auto *var = static_cast <SAT::VarNode *> (op->left_);
+                vars.push_back ({var->getName (), true});
+                continue;
+            }
+
+            preorder.push_back (curNode->right_);
+            preorder.push_back (curNode->left_);
+        }
+        // std::cout << "ahhahah" << std::endl;
+
+        for (auto curIt = vars.begin (), endIt = vars.end (); curIt != endIt; ++curIt) {
+
+            auto res = converter_.find (curIt->first);
+            if (res == converter_.end ()) {
+                std::cout << curIt->first << std::endl;
+                int number = converter_.size ();
+                converter_.insert ({curIt->first, number});
+                reverseConverter_.insert ({number, curIt->first});
+            }
+            // std::cout << "mam1" << std::endl;
+
+            if (form_.back ().size () < 2) {
+                if (converter_.find (curIt->first) == converter_.end ()) std::cout << "lol? " << curIt->first << std::endl;
+                else form_.back ().push_back ({converter_.find (curIt->first)->second, curIt->second});
+            }
+            else {
+                if (curIt + 1 == endIt) {
+                    if (converter_.find (curIt->first) == converter_.end ()) std::cout << "lol? " << curIt->first << std::endl;
+
+                    else form_.back ().push_back ({converter_.find (curIt->first)->second, curIt->second});
+                    continue;
+                }
+                std::string fakeName = "fakeVar" + std::to_string (numberOfFakeVars_++);
+                int number = converter_.size ();
+                converter_.insert ({fakeName, number});
+                reverseConverter_.insert ({number, fakeName});
+                
+                form_.back ().push_back ({number, false});
+                form_.push_back ({});
+                form_.back ().push_back ({number, true});
+                form_.back ().push_back ({converter_.find (curIt->first)->second, curIt->second});
+            }
+
+        }
+
+        if (form_.back ().size ())
+            form_.push_back ({});
+    }
+
+    void CNF_3::init (const Form &form)
+    {
+        std::vector<SAT::Node *> preorder;
+        form_.push_back ({});
+
+        preorder.push_back (form.getRoot ());
+
+        while (!preorder.empty ()) {
+            auto *curNode = preorder.back ();
+            preorder.pop_back ();
+
+            if (!curNode)
+                continue;
+
+            if (!(curNode->getType () == SAT::Node::NodeT::OPERATOR &&
+                  static_cast<SAT::OperNode *> (curNode)->getOpType () == SAT::OperNode::OperType::AND)) {
+                conjunctCast (curNode);
+                continue;
+            }
+
+            preorder.push_back (curNode->left_);
+            preorder.push_back (curNode->right_);
+        }
+        form_.pop_back ();
+    }
+
+    std::string CNF_3::toString () const
+    {
+        std::string strForm = "";
+        for (auto &conjunct: form_) {
+            strForm += "(";
+            for (auto &var: conjunct) {
+                if (var.second)
+                    strForm += "~";
+
+                strForm += reverseConverter_.find (var.first)->second + "|";
+            }
+
+            strForm[strForm.length () - 1] = ')';
+            strForm += "&";
+        }
+        strForm.pop_back ();
+        return strForm;
+    }
+
 }  // namespace SAT

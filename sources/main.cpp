@@ -10,9 +10,12 @@ int main ()
 
     // form.toCNF ();
     // form.simplify ();
-    SAT::Form eval = form.evaluate ();
-    std::cout << eval.toString () << std::endl;
+    // SAT::Form eval = form.evaluate ();
+    std::cout << form.toString () << std::endl;
     // eval.callDump (std::cout);
     // std::cout << std::endl;
+    SAT::CNF_3 cool (form);
+    std::cout << cool.toString () << std::endl;
+
     return 0;
 }

@@ -167,7 +167,7 @@ parser::token_type yylex (parser::semantic_type* yylval, parser::location_type* 
     }
 
 }
-void parser::error (const parser::location_type& location, const std::string& what) {
+void parser::error ([[maybe_unused]] const parser::location_type& location, [[maybe_unused]] const std::string& what) {
 
 }
 }

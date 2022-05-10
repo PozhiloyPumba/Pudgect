@@ -15,7 +15,11 @@ if(CLANG_FORMAT)
     )
 endif()
 
-# include(CMakePrintHelpers)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+add_compile_options("-Wall" "-Wextra" "$<$<CONFIG:RELEASE>:-O2>")
+
 # Here we're trying to find Bison and Flex
 find_package (BISON REQUIRED)
 find_package (FLEX REQUIRED)
@@ -56,12 +60,5 @@ target_include_directories (${EXEC_FILE} PRIVATE "${CMAKE_SOURCE_DIR}/sources/le
 
 target_compile_options(${EXEC_FILE} PRIVATE -fsanitize=address)
 target_link_options(${EXEC_FILE} PRIVATE -fsanitize=address)
-
-set (COMPILER_SETTINGS
-    -std=c++2a
-    -Wall
-    -O2
-    -g
-)
 
 target_compile_options(${EXEC_FILE} PRIVATE ${COMPILER_SETTINGS})

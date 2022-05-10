@@ -17,7 +17,8 @@ namespace SAT {
         Tree::BinaryTree<SAT::Node *> tree_;
         std::unordered_map<std::string, bool> evalInfo_;
 
-        bool isCNF = false;
+        bool isCNF_ = false;
+        bool isSimple_ = false;
 
         void recToString (SAT::Node *curRoot, std::string &str) const;
 
@@ -43,13 +44,30 @@ namespace SAT {
         void toCNF ();
 
         void simplify ();
-        Form evaluate () const;  // maybe const
+        Form evaluate () const;
 
         std::string toString () const;  // func which cast form to string
 
         void printEvalInfo () const;
 
+        inline bool isCNF () const { return isCNF_; }
+        inline bool isSimple () const { return isSimple_; }
         inline void callDump (std::ostream &out) const { tree_.dump (out); }
+        inline auto *getRoot () const { return tree_.getRoot (); }
+    };
+
+    class CNF_3 final {
+        std::unordered_map <std::string, int> converter_;
+        std::unordered_map <int, std::string> reverseConverter_;
+
+        std::vector <std::vector<std::pair<int, bool>>> form_;
+        int numberOfFakeVars_ = 0;
+        void init (const Form &form);
+        void conjunctCast (SAT::Node *curNode);
+
+    public:
+        CNF_3 (const Form &form);
+        std::string toString () const;  // func which cast form to string
     };
 }  // namespace SAT
 #endif
